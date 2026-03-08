@@ -1,0 +1,18 @@
+# Node
+node_modules/
+
+# Tauri / Rust build
+src-tauri/target/
+
+# JetBrains IDE
+.idea/
+
+# Generated files
+gen/schemas/
+
+# Logs
+*.log
+
+# Env files
+.env
+.env.local

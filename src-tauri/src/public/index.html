@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcheAudio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+
+    <style>
+        /* ═══════════════════════════════════════════════
+           DESIGN TOKENS
+        ═══════════════════════════════════════════════ */
+        :root {
+            /* Base layer */
+            /* Change this to an rgba value with ~85% opacity */
+            --bg: #060a12;
+            --surface:   #0a1020;
+            --surface2:  #0e1628;
+            --surface3:  #121d32;
+
+            /* Borders */
+            --border:    #1a2a45;
+            --border-hi: #274060;
+            --border-glow: rgba(0, 200, 255, 0.25);
+
+            /* Text — readable contrast */
+            --text:        #8bbcd8;      /* main body  */
+            --text-dim:    #4a6a88;      /* subdued     */
+            --text-mid:    #6a96b8;      /* mid weight  */
+            --text-bright: #c8e4f8;      /* headings    */
+            --text-white:  #e8f4ff;      /* max bright  */
+
+            /* Accent — electric cyan */
+            --accent:      #00c8ff;
+            --accent-dim:  rgba(0, 200, 255, 0.08);
+            --accent-lo:   rgba(0, 200, 255, 0.15);
+            --accent-glow: 0 0 12px rgba(0, 200, 255, 0.4), 0 0 24px rgba(0, 200, 255, 0.15);
+
+            /* Status colors */
+            --green:     #00ff88;
+            --green-lo:  rgba(0, 255, 136, 0.12);
+            --yellow:    #ffcc00;
+            --yellow-lo: rgba(255, 204, 0, 0.12);
+            --red:       #ff4466;
+            --red-lo:    rgba(255, 68, 102, 0.12);
+
+            /* Sizing */
+            --radius:    6px;
+            --radius-lg: 8px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           RESET & BASE
+        ═══════════════════════════════════════════════ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* CRT scanlines — subtle */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(0,0,0,0.06) 3px,
+                    rgba(0,0,0,0.06) 4px
+            );
+            pointer-events: none;
+            z-index: 9997;
+        }
+
+        /* Ambient glow top */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent) 40%, var(--accent) 60%, transparent 100%);
+            opacity: 0.6;
+            z-index: 9999;
+        }
+
+        /* ═══════════════════════════════════════════════
+           SCROLLBAR
+        ═══════════════════════════════════════════════ */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        * { scrollbar-width: thin; scrollbar-color: var(--border-hi) transparent; }
+
+        /* ═══════════════════════════════════════════════
+           HEADER
+        ═══════════════════════════════════════════════ */
+        header {
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            height: 48px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            flex-shrink: 0;
+            gap: 16px;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-white);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 0 6px rgba(0, 200, 255, 0.6));
+        }
+
+        .logo-bracket {
+            color: var(--accent);
+            font-size: 18px;
+            line-height: 1;
+            opacity: 0.7;
+        }
+
+        .header-spacer { flex: 1; }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 12px 4px 8px;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            color: var(--text-mid);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--green);
+            animation: blink 2.4s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+
+        /* ═══════════════════════════════════════════════
+           TABS
+        ═══════════════════════════════════════════════ */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            flex-shrink: 0;
+            padding: 0 20px;
+            gap: 2px;
+        }
+
+        .tab {
+            position: relative;
+            padding: 10px 16px;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: color 0.15s, border-color 0.15s;
+            user-select: none;
+            white-space: nowrap;
+            margin-bottom: -1px;
+        }
+
+        .tab:hover { color: var(--text-mid); }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            text-shadow: 0 0 12px rgba(0, 200, 255, 0.5);
+        }
+
+        /* ═══════════════════════════════════════════════
+           CONTENT AREA
+        ═══════════════════════════════════════════════ */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 16px;
+        }
+
+        .tab-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           EMPTY STATE
+        ═══════════════════════════════════════════════ */
+        .empty {
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--text-dim);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-lg);
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            line-height: 2;
+        }
+
+        .empty::before {
+            content: '//';
+            display: block;
+            font-size: 20px;
+            color: var(--border-hi);
+            margin-bottom: 12px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           STREAM / DEVICE CARD
+        ═══════════════════════════════════════════════ */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 13px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        /* Corner brackets — terminal decoration */
+        .card::before, .card::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-color: var(--border-hi);
+            border-style: solid;
+            transition: border-color 0.15s;
+        }
+        .card::before { top: 0; left: 0; border-width: 1px 0 0 1px; border-radius: var(--radius-lg) 0 0 0; }
+        .card::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; border-radius: 0 0 var(--radius-lg) 0; }
+
+        .card:hover {
+            border-color: var(--border-hi);
+        }
+
+        .card:hover::before,
+        .card:hover::after {
+            border-color: var(--accent);
+            border-width: 2px;
+        }
+
+        /* Default device — glowing accent */
+        .card.is-default {
+            border-color: rgba(0, 200, 255, 0.3);
+            background: linear-gradient(135deg, rgba(0, 200, 255, 0.05) 0%, transparent 60%);
+            box-shadow: inset 0 0 20px rgba(0, 200, 255, 0.04);
+        }
+
+        .card.is-default::before { border-color: var(--accent); border-width: 2px; }
+        .card.is-default::after  { border-color: var(--accent); border-width: 2px; }
+
+        /* Left accent stripe on default */
+        .card.is-default .card-stripe {
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        /* Corked/inactive */
+        .card.corked { opacity: 0.4; }
+
+        /* Left edge stripe */
+        .card-stripe {
+            position: absolute;
+            left: 0; top: 8px; bottom: 8px;
+            width: 2px;
+            background: var(--border-hi);
+            border-radius: 0 2px 2px 0;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+
+        /* ═══════════════════════════════════════════════
+           CARD HEADER
+        ═══════════════════════════════════════════════ */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius);
+            background: var(--surface2);
+            border: 1px solid var(--border-hi);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-name {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: 0.04em;
+        }
+
+        .card.is-default .card-name { color: var(--accent); }
+
+        .card-sub {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
+        .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        /* ═══════════════════════════════════════════════
+           VU METER
+        ═══════════════════════════════════════════════ */
+        .vu-wrap {
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+            height: 18px;
+            flex-shrink: 0;
+            padding: 0 4px;
+        }
+
+        .vu-bar {
+            width: 3px;
+            border-radius: 1px 1px 0 0;
+            background: var(--border-hi);
+            min-height: 2px;
+            transition: height 0.06s ease-out, background 0.06s ease-out;
+        }
+
+        /* ═══════════════════════════════════════════════
+           VOLUME ROW
+        ═══════════════════════════════════════════════ */
+        .vol-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vol-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+            width: 28px;
+            text-align: right;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+
+        .vol-slider {
+            flex: 1;
+            position: relative;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .vol-track {
+            position: absolute;
+            left: 0; right: 0;
+            height: 3px;
+            background: var(--surface3);
+            border-radius: 3px;
+            border: 1px solid var(--border);
+        }
+
+        .vol-fill {
+            position: absolute;
+            left: 0;
+            height: 3px;
+            border-radius: 3px;
+            pointer-events: none;
+            transition: background 0.15s;
+        }
+
+        .vol-thumb {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--text-white);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            box-shadow: 0 0 0 2px var(--bg), 0 0 8px rgba(0, 200, 255, 0.4);
+            transition: box-shadow 0.15s;
+        }
+
+        .vol-slider:hover .vol-thumb {
+            box-shadow: 0 0 0 2px var(--bg), var(--accent-glow);
+        }
+
+        .vol-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--text-mid);
+            width: 40px;
+            text-align: right;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.02em;
+        }
+
+        /* ═══════════════════════════════════════════════
+           FIELD ROW (port / route select)
+        ═══════════════════════════════════════════════ */
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .field-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+            width: 44px;
+            flex-shrink: 0;
+            text-transform: uppercase;
+            text-align: right;
+        }
+
+        /* ═══════════════════════════════════════════════
+           SELECT
+        ═══════════════════════════════════════════════ */
+        select {
+            flex: 1;
+            background: var(--surface2);
+            border: 1px solid var(--border-hi);
+            color: var(--text);
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            padding: 5px 28px 5px 10px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.15s, color 0.15s, box-shadow 0.15s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%234a6a88'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            letter-spacing: 0.02em;
+        }
+
+        select:hover, select:focus {
+            border-color: var(--accent);
+            color: var(--text-bright);
+            box-shadow: 0 0 0 1px var(--border-glow);
+        }
+
+        select option { background: var(--surface2); color: var(--text-bright); }
+
+        /* ═══════════════════════════════════════════════
+           BUTTONS
+        ═══════════════════════════════════════════════ */
+        .btn {
+            background: var(--surface2);
+            border: 1px solid var(--border-hi);
+            color: var(--text-mid);
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            padding: 4px 10px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: all 0.12s;
+            white-space: nowrap;
+            font-weight: 700;
+        }
+
+        .btn:hover {
+            border-color: var(--border-glow);
+            color: var(--text-bright);
+            background: var(--surface3);
+        }
+
+        .btn.is-default-badge {
+            color: var(--accent);
+            border-color: rgba(0, 200, 255, 0.3);
+            background: var(--accent-lo);
+            pointer-events: none;
+            text-shadow: 0 0 8px rgba(0, 200, 255, 0.4);
+        }
+
+        .btn.set-def:hover {
+            color: var(--accent);
+            border-color: rgba(0, 200, 255, 0.4);
+            background: var(--accent-dim);
+        }
+
+        .btn.muted {
+            color: var(--red);
+            border-color: rgba(255, 68, 102, 0.3);
+            background: var(--red-lo);
+        }
+
+        .btn.muted:hover {
+            box-shadow: 0 0 8px rgba(255, 68, 102, 0.25);
+        }
+
+        /* ═══════════════════════════════════════════════
+           CONFIG CARD
+        ═══════════════════════════════════════════════ */
+        .cfg-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 2px;
+            transition: border-color 0.15s;
+        }
+
+        .cfg-card:hover { border-color: var(--border-hi); }
+
+        .cfg-card-head {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--surface2);
+        }
+
+        .cfg-card-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 4px;
+            opacity: 0.7;
+        }
+
+        .cfg-card-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .cfg-card-body {
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* ═══════════════════════════════════════════════
+           DIVIDER
+        ═══════════════════════════════════════════════ */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 4px 0;
+            color: var(--text-dim);
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .section-divider::before, .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ═══════════════════════════════════════════════
+           TOAST
+        ═══════════════════════════════════════════════ */
+        .toast {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            background: var(--surface2);
+            border: 1px solid var(--border-glow);
+            padding: 8px 14px;
+            border-radius: var(--radius);
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: var(--accent);
+            letter-spacing: 0.08em;
+            z-index: 10000;
+            pointer-events: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px var(--border-glow);
+        }
+
+        .toast::before {
+            content: '> ';
+            opacity: 0.5;
+        }
+
+        [x-cloak] { display: none; }
+    </style>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('archeAudio', () => ({
+
+                /* ── State ── */
+                activeTab: 'playback',
+                tabs: [
+                    { id: 'playback',  label: 'Playback' },
+                    { id: 'recording', label: 'Recording' },
+                    { id: 'output',    label: 'Output' },
+                    { id: 'input',     label: 'Input' },
+                    { id: 'config',    label: 'Config' },
+                ],
+
+                sinks:         [],
+                sources:       [],
+                sinkInputs:    [],
+                sourceOutputs: [],
+                cards:         [],
+
+                status:    'connecting...',
+                toastMsg:  '',
+
+                isDragging:  false,
+                lastTouched: {},
+                vuTimers:    {},
+                volTimers:   {},
+                toastTimer:  null,
+
+                /* ── Init ── */
+                async init() {
+                    await this.fetchAll();
+                    setInterval(() => { if (!this.isDragging) this.fetchAll(); }, 4000);
+                },
+
+                /* ── Smart list merge (avoids slider jitter on refresh) ── */
+                updateList(localList, newList, kind) {
+                    newList.forEach(remote => {
+                        const local    = localList.find(i => i.id === remote.id);
+                        const touchKey = `${kind}-${remote.id}`;
+
+                        if (local) {
+                            const locked = (Date.now() - (this.lastTouched[touchKey] || 0)) < 8000;
+                            if (!locked) local.volume = remote.volume;
+
+                            local.muted    = remote.muted;
+                            local.name     = remote.name;
+                            local.nodeName = remote.nodeName;
+                            local.isDefault = remote.isDefault;
+
+                            if (remote.corked    !== undefined) local.corked    = remote.corked;
+                            if (remote.appName)                 local.appName   = remote.appName;
+                            if (remote.mediaName)               local.mediaName = remote.mediaName;
+                            if (remote.activePort)              local.activePort = remote.activePort;
+                            if (remote.ports)                   local.ports      = remote.ports;
+                        } else {
+                            localList.push(remote);
+                        }
+                    });
+
+                    for (let i = localList.length - 1; i >= 0; i--) {
+                        if (!newList.find(r => r.id === localList[i].id)) localList.splice(i, 1);
+                    }
+                },
+
+                /* ── Fetch all PipeWire state ── */
+                async fetchAll() {
+                    try {
+                        const invoke = window.__TAURI__.core.invoke;
+                        const [sinks, sources, sinkInputs, sourceOutputs, cards] = await Promise.all([
+                            invoke('get_sinks'), invoke('get_sources'),
+                            invoke('get_sink_inputs'), invoke('get_source_outputs'),
+                            invoke('get_cards'),
+                        ]);
+
+                        this.status = `${sinks.length} out · ${sources.length} in`;
+
+                        this.updateList(this.sinks,         sinks,         'device');
+                        this.updateList(this.sources,       sources,       'device');
+                        this.updateList(this.sinkInputs,    sinkInputs,    'stream');
+                        this.updateList(this.sourceOutputs, sourceOutputs, 'stream');
+                        this.cards = cards;
+
+                        this.$nextTick(() => {
+                            this.sinkInputs.forEach(s => {
+                                if (!s.corked && !s.muted) this.startVU(`vu-${s.id}`);
+                            });
+                        });
+                    } catch(e) {
+                        this.status = 'error';
+                        console.error(e);
+                    }
+                },
+
+                /* ── Animated VU bars ── */
+                startVU(elId) {
+                    if (this.vuTimers[elId]) return;
+                    this.vuTimers[elId] = setInterval(() => {
+                        const el = document.getElementById(elId);
+                        if (!el) { clearInterval(this.vuTimers[elId]); delete this.vuTimers[elId]; return; }
+                        el.querySelectorAll('.vu-bar').forEach(bar => {
+                            const h   = Math.random() * 14 + 2;
+                            const pct = h / 16;
+                            bar.style.height = h + 'px';
+                            bar.style.background =
+                                pct > 0.85 ? 'var(--red)'    :
+                                    pct > 0.65 ? 'var(--yellow)' : 'var(--green)';
+                            bar.style.boxShadow =
+                                pct > 0.85 ? '0 0 4px var(--red)'    :
+                                    pct > 0.65 ? '0 0 4px var(--yellow)' : '0 0 4px var(--green)';
+                        });
+                    }, 80);
+                },
+
+                /* ── Volume helpers ── */
+                volPct(vol) { return Math.min(vol, 150) / 150 * 100; },
+
+                volColor(item) {
+                    if (item.muted)      return 'var(--text-dim)';
+                    if (item.isDefault)  return 'var(--accent)';
+                    return 'var(--text-mid)';
+                },
+
+                /* ── Drag-to-set volume ── */
+                startDrag(event, item, type, kind) {
+                    this.isDragging = true;
+                    const touchKey  = `${type}-${item.id}`;
+                    this.lastTouched[touchKey] = Date.now();
+
+                    const slider = event.currentTarget;
+
+                    const update = (e) => {
+                        const rect = slider.getBoundingClientRect();
+                        const pct  = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1));
+                        const v    = Math.round(pct * 150);
+                        item.volume = v;
+                        this.lastTouched[touchKey] = Date.now();
+
+                        clearTimeout(this.volTimers[item.id]);
+                        this.volTimers[item.id] = setTimeout(() => {
+                            const invoke = window.__TAURI__.core.invoke;
+                            type === 'device'
+                                ? invoke('set_volume',        { id: item.id, volume: v })
+                                : invoke('set_stream_volume', { id: item.id, volume: v, kind });
+                        }, 40);
+                    };
+
+                    update(event);
+                    const onMove = (e) => update(e);
+                    const onUp   = () => {
+                        this.isDragging = false;
+                        window.removeEventListener('mousemove', onMove);
+                        window.removeEventListener('mouseup',   onUp);
+                    };
+                    window.addEventListener('mousemove', onMove);
+                    window.addEventListener('mouseup',   onUp);
+                },
+
+                /* ── Device / stream controls ── */
+                async setDefault(item) {
+                    await window.__TAURI__.core.invoke('set_default', { id: item.id });
+                    this.toast('default updated');
+                    setTimeout(() => this.fetchAll(), 200);
+                },
+
+                async deviceMute(item, mute) {
+                    item.muted = mute;
+                    await window.__TAURI__.core.invoke('set_mute', { id: item.id, mute });
+                },
+
+                async streamMute(id, mute, kind) {
+                    const arr  = kind === 'sink-input' ? this.sinkInputs : this.sourceOutputs;
+                    const item = arr.find(s => s.id === id);
+                    if (item) item.muted = mute;
+                    await window.__TAURI__.core.invoke('set_stream_mute', { id, mute, kind });
+                },
+
+                async moveStream(streamId, targetId, kind) {
+                    await window.__TAURI__.core.invoke('move_stream', { streamId, targetId, kind });
+                    this.toast('stream routed');
+                },
+
+                async setPort(deviceName, port, kind) {
+                    await window.__TAURI__.core.invoke('set_port', { deviceName, port, kind });
+                    this.toast(`port → ${port}`);
+                    setTimeout(() => this.fetchAll(), 300);
+                },
+
+                async setProfile(cardName, profile) {
+                    await window.__TAURI__.core.invoke('set_profile', { cardName, profile });
+                    this.toast('profile updated');
+                    setTimeout(() => this.fetchAll(), 600);
+                },
+
+                /* ── App icon mapping ── */
+                appIcon(name) {
+                    const map = {
+                        spotify: '🎵', firefox: '🦊', brave: '🦁',
+                        chromium: '🌐', chrome: '🌐', vlc: '🎬',
+                        mpv: '▶', discord: '💬', telegram: '✈',
+                        slack: '💼', zoom: '📹', obs: '🔴', steam: '🎮',
+                    };
+                    const k = (name || '').toLowerCase();
+                    for (const [key, val] of Object.entries(map)) {
+                        if (k.includes(key)) return val;
+                    }
+                    return '◈';
+                },
+
+                /* ── Toast notification ── */
+                toast(msg) {
+                    this.toastMsg = msg;
+                    clearTimeout(this.toastTimer);
+                    this.toastTimer = setTimeout(() => { this.toastMsg = ''; }, 2000);
+                },
+            }));
+        });
+    </script>
+</head>
+
+<body x-data="archeAudio">
+
+<!-- ═══════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════ -->
+<header>
+    <div class="logo">
+        <svg class="logo-icon" width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="11" stroke="#00c8ff" stroke-width="1.2" opacity="0.3"/>
+            <circle cx="14" cy="14" r="7"  stroke="#00c8ff" stroke-width="1.2" opacity="0.6"/>
+            <circle cx="14" cy="14" r="2.5" fill="#00c8ff"/>
+            <line x1="14" y1="3"  x2="14" y2="7"  stroke="#00c8ff" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="14" y1="21" x2="14" y2="25" stroke="#00c8ff" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="3"  y1="14" x2="7"  y2="14" stroke="#00c8ff" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="21" y1="14" x2="25" y2="14" stroke="#00c8ff" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="5.7" y1="5.7"   x2="8.5"  y2="8.5"  stroke="#00c8ff" stroke-width="1"   stroke-linecap="round" opacity="0.4"/>
+            <line x1="19.5" y1="19.5" x2="22.3" y2="22.3" stroke="#00c8ff" stroke-width="1"   stroke-linecap="round" opacity="0.4"/>
+        </svg>
+        <span class="logo-bracket">[</span>
+        ArcheAudio
+        <span class="logo-bracket">]</span>
+    </div>
+
+    <div class="header-spacer"></div>
+
+    <div class="status-pill">
+        <div class="status-dot"></div>
+        <span x-text="status"></span>
+    </div>
+</header>
+
+<!-- ═══════════════════════════════════════════
+     TABS
+═══════════════════════════════════════════ -->
+<div class="tabs">
+    <template x-for="t in tabs" :key="t.id">
+        <div class="tab" :class="{ active: activeTab === t.id }" @click="activeTab = t.id" x-text="t.label"></div>
+    </template>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     CONTENT
+═══════════════════════════════════════════ -->
+<div class="content">
+
+    <!-- PLAYBACK STREAMS -->
+    <div class="tab-panel" x-show="activeTab === 'playback'">
+        <template x-if="sinkInputs.length === 0">
+            <div class="empty">no active playback streams</div>
+        </template>
+        <template x-for="s in sinkInputs" :key="s.id">
+            <div class="card" :class="{ corked: s.corked }">
+                <div class="card-stripe"></div>
+                <div class="card-header">
+                    <div class="app-icon" x-text="appIcon(s.appName)"></div>
+                    <div class="card-title">
+                        <div class="card-name" x-text="s.appName"></div>
+                        <div class="card-sub" x-show="s.mediaName && s.mediaName !== s.appName" x-text="s.mediaName"></div>
+                    </div>
+                    <div class="vu-wrap" :id="`vu-${s.id}`">
+                        <template x-for="i in 10" :key="i">
+                            <div class="vu-bar" style="height:2px"></div>
+                        </template>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" :class="{ muted: s.muted }"
+                                @click="streamMute(s.id, !s.muted, 'sink-input')"
+                                x-text="s.muted ? '󰝟 muted' : '󰕾 mute'">
+                        </button>
+                    </div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-label">vol</div>
+                    <div class="vol-slider" @mousedown="startDrag($event, s, 'stream', 'sink-input')">
+                        <div class="vol-track"></div>
+                        <div class="vol-fill" :style="`width:${volPct(s.volume)}%; background:${s.muted ? 'var(--text-dim)' : 'var(--accent)'}`"></div>
+                        <div class="vol-thumb" :style="`left:${volPct(s.volume)}%`"></div>
+                    </div>
+                    <div class="vol-value" x-text="s.volume + '%'"></div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">route</div>
+                    <select @change="moveStream(s.id, parseInt($event.target.value), 'sink-input')">
+                        <template x-for="sk in sinks" :key="sk.id">
+                            <option :value="sk.id" :selected="sk.nodeName === s.sinkName" x-text="sk.name"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- RECORDING STREAMS -->
+    <div class="tab-panel" x-show="activeTab === 'recording'">
+        <template x-if="sourceOutputs.length === 0">
+            <div class="empty">no active recording streams</div>
+        </template>
+        <template x-for="s in sourceOutputs" :key="s.id">
+            <div class="card" :class="{ corked: s.corked }">
+                <div class="card-stripe"></div>
+                <div class="card-header">
+                    <div class="app-icon" x-text="appIcon(s.appName)"></div>
+                    <div class="card-title">
+                        <div class="card-name" x-text="s.appName"></div>
+                        <div class="card-sub" x-show="s.mediaName && s.mediaName !== s.appName" x-text="s.mediaName"></div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn" :class="{ muted: s.muted }"
+                                @click="streamMute(s.id, !s.muted, 'source-output')"
+                                x-text="s.muted ? '󰝟 muted' : '󰕾 mute'">
+                        </button>
+                    </div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-label">vol</div>
+                    <div class="vol-slider" @mousedown="startDrag($event, s, 'stream', 'source-output')">
+                        <div class="vol-track"></div>
+                        <div class="vol-fill" :style="`width:${volPct(s.volume)}%; background:var(--accent)`"></div>
+                        <div class="vol-thumb" :style="`left:${volPct(s.volume)}%`"></div>
+                    </div>
+                    <div class="vol-value" x-text="s.volume + '%'"></div>
+                </div>
+                <div class="field-row">
+                    <div class="field-label">from</div>
+                    <select @change="moveStream(s.id, parseInt($event.target.value), 'source-output')">
+                        <template x-for="src in sources" :key="src.id">
+                            <option :value="src.id" x-text="src.name"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- OUTPUT DEVICES -->
+    <div class="tab-panel" x-show="activeTab === 'output'">
+        <template x-if="sinks.length === 0">
+            <div class="empty">no output devices found</div>
+        </template>
+        <template x-for="s in sinks" :key="s.id">
+            <div class="card" :class="{ 'is-default': s.isDefault }">
+                <div class="card-stripe"></div>
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-name" x-text="s.name"></div>
+                        <div class="card-sub" x-text="s.nodeName"></div>
+                    </div>
+                    <div class="card-actions">
+                        <button x-show="!s.isDefault" class="btn set-def" @click="setDefault(s)">set default</button>
+                        <span x-show="s.isDefault" class="btn is-default-badge">● default</span>
+                        <button class="btn" :class="{ muted: s.muted }"
+                                @click="deviceMute(s, !s.muted)"
+                                x-text="s.muted ? '󰝟 muted' : '󰕾 mute'">
+                        </button>
+                    </div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-label">vol</div>
+                    <div class="vol-slider" @mousedown="startDrag($event, s, 'device', null)">
+                        <div class="vol-track"></div>
+                        <div class="vol-fill" :style="`width:${volPct(s.volume)}%; background:${volColor(s)}`"></div>
+                        <div class="vol-thumb" :style="`left:${volPct(s.volume)}%`"></div>
+                    </div>
+                    <div class="vol-value" :style="s.isDefault ? 'color:var(--accent)' : ''" x-text="s.volume + '%'"></div>
+                </div>
+                <div class="field-row" x-show="s.ports && s.ports.length > 1">
+                    <div class="field-label">port</div>
+                    <select @change="setPort(s.nodeName, $event.target.value, 'sink')">
+                        <template x-for="p in s.ports" :key="p.name">
+                            <option :value="p.name" :selected="p.name === s.activePort" :disabled="!p.available"
+                                    x-text="p.description + (!p.available ? ' (n/a)' : '')">
+                            </option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- INPUT DEVICES -->
+    <div class="tab-panel" x-show="activeTab === 'input'">
+        <template x-if="sources.length === 0">
+            <div class="empty">no input devices found</div>
+        </template>
+        <template x-for="s in sources" :key="s.id">
+            <div class="card" :class="{ 'is-default': s.isDefault }">
+                <div class="card-stripe"></div>
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-name" x-text="s.name"></div>
+                        <div class="card-sub" x-text="s.nodeName"></div>
+                    </div>
+                    <div class="card-actions">
+                        <button x-show="!s.isDefault" class="btn set-def" @click="setDefault(s)">set default</button>
+                        <span x-show="s.isDefault" class="btn is-default-badge">● default</span>
+                        <button class="btn" :class="{ muted: s.muted }"
+                                @click="deviceMute(s, !s.muted)"
+                                x-text="s.muted ? '󰝟 muted' : '󰕾 mute'">
+                        </button>
+                    </div>
+                </div>
+                <div class="vol-row">
+                    <div class="vol-label">vol</div>
+                    <div class="vol-slider" @mousedown="startDrag($event, s, 'device', null)">
+                        <div class="vol-track"></div>
+                        <div class="vol-fill" :style="`width:${volPct(s.volume)}%; background:${volColor(s)}`"></div>
+                        <div class="vol-thumb" :style="`left:${volPct(s.volume)}%`"></div>
+                    </div>
+                    <div class="vol-value" :style="s.isDefault ? 'color:var(--accent)' : ''" x-text="s.volume + '%'"></div>
+                </div>
+                <div class="field-row" x-show="s.ports && s.ports.length > 1">
+                    <div class="field-label">port</div>
+                    <select @change="setPort(s.nodeName, $event.target.value, 'source')">
+                        <template x-for="p in s.ports" :key="p.name">
+                            <option :value="p.name" :selected="p.name === s.activePort" x-text="p.description"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- CONFIG / CARD PROFILES -->
+    <div class="tab-panel" x-show="activeTab === 'config'">
+        <template x-for="c in cards" :key="c.id">
+            <div class="cfg-card">
+                <div class="cfg-card-head">
+                    <div>
+                        <div class="cfg-card-label">audio card</div>
+                        <div class="cfg-card-title" x-text="c.description"></div>
+                        <div class="card-sub" style="margin-top:3px" x-text="c.name"></div>
+                    </div>
+                </div>
+                <div class="cfg-card-body">
+                    <div class="field-row">
+                        <div class="field-label">profile</div>
+                        <select @change="setProfile(c.name, $event.target.value)">
+                            <template x-for="p in c.profiles" :key="p.name">
+                                <option :value="p.name" :selected="p.name === c.activeProfile"
+                                        :disabled="!p.available"
+                                        x-text="p.description + (!p.available ? ' (n/a)' : '')">
+                                </option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TOAST
+═══════════════════════════════════════════ -->
+<div class="toast" x-show="toastMsg" x-text="toastMsg" x-transition x-cloak></div>
+
+</body>
+</html>
