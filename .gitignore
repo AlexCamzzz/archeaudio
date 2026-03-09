@@ -3,6 +3,8 @@ node_modules/
 
 # Tauri / Rust build
 src-tauri/target/
+src-tauri/capabilities/
+src-tauri/gen/
 
 # JetBrains IDE
 .idea/
