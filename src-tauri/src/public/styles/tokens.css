@@ -1,0 +1,64 @@
+/* ═══════════════════════════════════════════════════════════
+   ARCHEAUDIO — Design Tokens
+   All visual values live here. Override in user_theme.css.
+═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Backgrounds ──────────────────────────────────────── */
+  --bg:        #060a12;
+  --surface:   #0a1020;
+  --surface2:  #0e1628;
+  --surface3:  #121d32;
+
+  /* ── Borders ──────────────────────────────────────────── */
+  --border:       #1a2a45;
+  --border-hi:    #274060;
+  --border-glow:  rgba(0, 200, 255, 0.25);
+
+  /* ── Text ─────────────────────────────────────────────── */
+  --text:        #8bbcd8;   /* body          */
+  --text-dim:    #4a6a88;   /* subdued        */
+  --text-mid:    #6a96b8;   /* mid weight     */
+  --text-bright: #c8e4f8;   /* headings       */
+  --text-white:  #e8f4ff;   /* max brightness */
+
+  /* ── Accent (electric cyan) ───────────────────────────── */
+  --accent:      #00c8ff;
+  --accent-dim:  rgba(0, 200, 255, 0.08);
+  --accent-lo:   rgba(0, 200, 255, 0.15);
+  --accent-glow: 0 0 12px rgba(0, 200, 255, 0.4),
+                 0 0 24px rgba(0, 200, 255, 0.15);
+
+  /* ── Status colors ────────────────────────────────────── */
+  --green:     #00ff88;
+  --green-lo:  rgba(0, 255, 136, 0.12);
+  --yellow:    #ffcc00;
+  --yellow-lo: rgba(255, 204, 0, 0.12);
+  --red:       #ff4466;
+  --red-lo:    rgba(255, 68, 102, 0.12);
+
+  /* ── Shape ────────────────────────────────────────────── */
+  --radius:    6px;
+  --radius-lg: 8px;
+
+  /* ── CRT overlay ──────────────────────────────────────── */
+  --crt-opacity:   0.06;   /* scanline darkness: 0 = off  */
+  --crt-line-gap:  3px;    /* scanline spacing             */
+
+  /* ── Glow intensities ────────────────────────────────── */
+  --glow-status-dot: 0 0 8px var(--green);
+  --glow-logo-icon:  drop-shadow(0 0 6px rgba(0, 200, 255, 0.6));
+  --glow-vol-thumb:  0 0 0 2px var(--bg), 0 0 8px rgba(0, 200, 255, 0.4);
+  --glow-vol-hover:  0 0 0 2px var(--bg), var(--accent-glow);
+  --glow-vu-green:   0 0 4px var(--green);
+  --glow-vu-yellow:  0 0 4px var(--yellow);
+  --glow-vu-red:     0 0 4px var(--red);
+
+  /* ── Timing ───────────────────────────────────────────── */
+  --transition-fast: 0.12s;
+  --transition-base: 0.15s;
+
+  /* ── Fonts ────────────────────────────────────────────── */
+  --font-mono:  'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
+  --font-title: 'Space Mono', monospace;
+}

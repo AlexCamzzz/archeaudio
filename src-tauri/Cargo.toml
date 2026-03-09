@@ -1,14 +1,12 @@
 [package]
 name = "ArcheAudio"
 version = "1.0.0"
-description = "A Tauri App"
+description = "A modular PipeWire mixer for Arch Linux"
 authors = ["Alexandro Cardona"]
-license = ""
+license = "MIT"
 repository = ""
 edition = "2021"
 rust-version = "1.77.2"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name = "app_lib"
@@ -19,7 +17,9 @@ tauri-build = { version = "2.5.6", features = [] }
 
 [dependencies]
 serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-log = "0.4"
-tauri = { version = "2.10.3", features = [] }
+serde     = { version = "1.0", features = ["derive"] }
+log       = "0.4"
+tauri     = { version = "2.10.3", features = [] }
 tauri-plugin-log = "2"
+dirs      = "6.0"
+mimalloc  = { version = "0.1", default-features = false }
