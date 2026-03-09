@@ -15,7 +15,7 @@
   position:       relative;
   overflow:       hidden;
   transition:     border-color var(--transition-base),
-                  box-shadow var(--transition-base);
+  box-shadow var(--transition-base);
 }
 
 /* Corner bracket decoration */
@@ -58,7 +58,7 @@
   background: var(--border-hi);
   border-radius: 0 2px 2px 0;
   transition: background var(--transition-base),
-              box-shadow var(--transition-base);
+  box-shadow var(--transition-base);
 }
 
 /* ── Card header ─────────────────────────────────────────── */
@@ -230,8 +230,8 @@ select {
   cursor:         pointer;
   outline:        none;
   transition:     border-color var(--transition-base),
-                  color var(--transition-base),
-                  box-shadow var(--transition-base);
+  color var(--transition-base),
+  box-shadow var(--transition-base);
   appearance:     none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%234a6a88'/%3E%3C/svg%3E");
   background-repeat:   no-repeat;
@@ -269,24 +269,37 @@ select option { background: var(--surface2); color: var(--text-bright); }
 
 .btn.is-default-badge {
   color:          var(--accent);
-  border-color:   rgba(0, 200, 255, 0.3);
+  border-color:   var(--border-glow);
   background:     var(--accent-lo);
   pointer-events: none;
-  text-shadow:    0 0 8px rgba(0, 200, 255, 0.4);
+  text-shadow:    var(--accent-glow);
 }
 
+.btn.set-def {
+  transition: background var(--transition-fast), color var(--transition-fast),
+  border-color var(--transition-fast), transform 60ms ease;
+}
 .btn.set-def:hover {
   color:        var(--accent);
-  border-color: rgba(0, 200, 255, 0.4);
+  border-color: var(--border-glow);
   background:   var(--accent-dim);
+}
+.btn.set-def:active {
+  transform:    scale(0.94);
+  background:   var(--accent-lo);
+  color:        var(--accent);
+  border-color: var(--accent);
 }
 
 .btn.muted {
   color:        var(--red);
-  border-color: rgba(255, 68, 102, 0.3);
+  border-color: var(--red-lo);
   background:   var(--red-lo);
 }
-.btn.muted:hover { box-shadow: 0 0 8px rgba(255, 68, 102, 0.25); }
+.btn.muted:hover { box-shadow: 0 0 8px var(--red-lo); }
+.btn:active:not(.is-default-badge) {
+  transform: scale(0.94);
+}
 
 /* ── Config card (for hardware profiles) ─────────────────── */
 .cfg-card {
@@ -350,4 +363,178 @@ select option { background: var(--surface2); color: var(--text-bright); }
   flex:       1;
   height:     1px;
   background: var(--border);
+}
+
+/* ── Theme picker ─────────────────────────────────────────── */
+.theme-grid {
+  display:               grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap:                   8px;
+  padding:               2px 0 4px;
+}
+
+.theme-card {
+  background:    var(--surface2);
+  border:        1px solid var(--border-hi);
+  border-radius: var(--radius-lg);
+  padding:       12px 12px 10px;
+  cursor:        pointer;
+  display:       flex;
+  flex-direction: column;
+  gap:           8px;
+  transition:    border-color var(--transition-base),
+  box-shadow var(--transition-base),
+  transform var(--transition-fast);
+  user-select:   none;
+  position:      relative;
+  overflow:      hidden;
+}
+
+.theme-card:hover {
+  border-color: var(--border-glow);
+  transform:    translateY(-1px);
+}
+
+.theme-card.active {
+  border-color: var(--accent);
+  box-shadow:   0 0 0 1px var(--border-glow),
+  inset 0 0 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Active checkmark badge */
+.theme-card.active::after {
+  content:         '✓';
+  position:        absolute;
+  top:             6px;
+  right:           8px;
+  font-size:       10px;
+  color:           var(--accent);
+  font-family:     var(--font-title);
+  text-shadow:     var(--accent-glow);
+  line-height:     1;
+}
+
+/* Color swatch strip at top of card */
+.theme-swatch {
+  height:        4px;
+  border-radius: 2px;
+  flex-shrink:   0;
+  opacity:       0.9;
+}
+
+/* Mini preview dots simulating the UI palette */
+.theme-preview {
+  display:       flex;
+  gap:           4px;
+  align-items:   center;
+  flex-wrap:     wrap;
+}
+
+.theme-dot {
+  width:         10px;
+  height:        10px;
+  border-radius: 50%;
+  flex-shrink:   0;
+}
+
+.theme-label {
+  font-family:    var(--font-title);
+  font-size:      9px;
+  font-weight:    700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color:          var(--text-mid);
+  white-space:    nowrap;
+  overflow:       hidden;
+  text-overflow:  ellipsis;
+  margin-top:     2px;
+}
+.theme-card.active .theme-label { color: var(--accent); }
+
+/* User theme note */
+.user-theme-note {
+  font-size:      10px;
+  color:          var(--text-dim);
+  letter-spacing: 0.04em;
+  line-height:    1.6;
+  padding:        10px 12px;
+  background:     var(--surface2);
+  border:         1px dashed var(--border-hi);
+  border-radius:  var(--radius);
+}
+.user-theme-note code {
+  color:       var(--accent);
+  font-family: var(--font-mono);
+  font-size:   10px;
+  opacity:     0.85;
+}
+
+/* ── Theme hero card (Appearance tab — active theme display) ── */
+.theme-hero {
+  border:        1px solid var(--border-hi);
+  border-radius: var(--radius-lg);
+  overflow:      hidden;
+  margin-bottom: 8px;
+  background:    var(--surface);
+}
+
+.theme-hero-bar {
+  height:     3px;
+  transition: background var(--transition-base);
+}
+
+.theme-hero-body {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             16px;
+  padding:         16px;
+}
+
+.theme-hero-label {
+  font-family:    var(--font-title);
+  font-size:      9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color:          var(--accent);
+  opacity:        0.75;
+  margin-bottom:  5px;
+}
+
+.theme-hero-name {
+  font-family: var(--font-title);
+  font-size:   16px;
+  font-weight: 700;
+  color:       var(--text-white);
+  line-height: 1;
+}
+
+.theme-hero-meta {
+  font-family:    var(--font-mono);
+  font-size:      10px;
+  color:          var(--text-dim);
+  margin-top:     5px;
+  letter-spacing: 0.06em;
+}
+
+.theme-hero-palette {
+  flex-shrink: 0;
+}
+
+.theme-palette-strip {
+  display:       flex;
+  gap:           3px;
+  align-items:   center;
+}
+
+.theme-palette-swatch {
+  width:         18px;
+  height:        28px;
+  border-radius: 3px;
+  border:        1px solid rgba(255,255,255,0.06);
+  transition:    transform var(--transition-fast);
+  cursor:        default;
+}
+.theme-palette-swatch:hover {
+  transform: scaleY(1.15);
 }

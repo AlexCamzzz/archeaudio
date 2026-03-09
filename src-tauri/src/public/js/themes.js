@@ -27,7 +27,7 @@ const THEMES = {
       'border-glow': 'rgba(0, 200, 255, 0.25)',
 
       'text':        '#8bbcd8',
-      'text-dim':    '#4a6a88',
+      'text-dim':    '#5880A6',
       'text-mid':    '#6a96b8',
       'text-bright': '#c8e4f8',
       'text-white':  '#e8f4ff',
@@ -73,7 +73,7 @@ const THEMES = {
       'border-glow': 'rgba(203, 166, 247, 0.25)',
 
       'text':        '#cdd6f4',
-      'text-dim':    '#585b70',
+      'text-dim':    '#636780',
       'text-mid':    '#a6adc8',
       'text-bright': '#cdd6f4',
       'text-white':  '#ffffff',
@@ -208,7 +208,7 @@ const THEMES = {
       'border-glow': 'rgba(136, 57, 239, 0.2)',
 
       'text':        '#4c4f69',
-      'text-dim':    '#9ca0b0',
+      'text-dim':    '#7E818C',
       'text-mid':    '#6c6f85',
       'text-bright': '#4c4f69',
       'text-white':  '#1e1e2e',
@@ -253,7 +253,7 @@ const THEMES = {
       'border-glow': 'rgba(136, 192, 208, 0.25)',
 
       'text':        '#d8dee9',
-      'text-dim':    '#4c566a',
+      'text-dim':    '#949EB5',
       'text-mid':    '#81a1c1',
       'text-bright': '#eceff4',
       'text-white':  '#eceff4',
@@ -298,7 +298,7 @@ const THEMES = {
       'border-glow': 'rgba(215, 153, 33, 0.25)',
 
       'text':        '#ebdbb2',
-      'text-dim':    '#665c54',
+      'text-dim':    '#AB9B8E',
       'text-mid':    '#a89984',
       'text-bright': '#fbf1c7',
       'text-white':  '#fbf1c7',

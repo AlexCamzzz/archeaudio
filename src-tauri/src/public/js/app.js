@@ -15,11 +15,12 @@ document.addEventListener('alpine:init', () => {
     /* ── Tabs ──────────────────────────────────────────────── */
     activeTab: 'playback',
     tabs: [
-      { id: 'playback',  label: 'Playback'  },
-      { id: 'recording', label: 'Recording' },
-      { id: 'output',    label: 'Output'    },
-      { id: 'input',     label: 'Input'     },
-      { id: 'config',    label: 'Config'    },
+      { id: 'playback',    label: 'Playback'    },
+      { id: 'recording',   label: 'Recording'   },
+      { id: 'output',      label: 'Output'      },
+      { id: 'input',       label: 'Input'       },
+      { id: 'config',      label: 'Hardware'    },
+      { id: 'appearance',  label: 'Appearance'  },
     ],
 
     /* ── Audio state ───────────────────────────────────────── */
@@ -133,7 +134,7 @@ document.addEventListener('alpine:init', () => {
       incoming.forEach(remote => {
         const item     = local.find(i => i.id === remote.id);
         const touchKey = `${namespace}-${remote.id}`;
-        const locked   = (Date.now() - (this._lastTouched[touchKey] || 0)) < 8000;
+        const locked   = (Date.now() - (this._lastTouched[touchKey] || 0)) < 1500;
 
         if (item) {
           if (!locked) item.volume = remote.volume;
@@ -280,32 +281,58 @@ document.addEventListener('alpine:init', () => {
     },
 
     /* ── Drag-to-set volume ────────────────────────────────── */
+    //
+    // Key design decision: we NEVER write to item.volume during a drag.
+    // Writing to the Alpine reactive proxy on every mousemove triggers a
+    // reactive flush each time, and if Alpine's scheduler is already
+    // mid-flush (e.g. from a VU timer tick or a Spotify property event)
+    // re-entrant proxy mutation crashes the WebKit view.
+    //
+    // Instead we drive the slider visuals directly via DOM style writes
+    // (zero Alpine involvement), then write item.volume exactly once on
+    // mouseup. The 8s _lastTouched lock prevents the next backend fetch
+    // from overwriting that value before the user's next interaction.
     startDrag(event, item, type, kind) {
       this.isDragging = true;
       const touchKey  = `${type}-${item.id}`;
       this._lastTouched[touchKey] = Date.now();
 
       const slider = event.currentTarget;
+      // Grab the fill and thumb directly — no Alpine binding involved.
+      const fill  = slider.querySelector('.vol-fill');
+      const thumb = slider.querySelector('.vol-thumb');
+
+      let lastV = item.volume; // track latest value without touching the proxy
 
       const update = (e) => {
         const rect = slider.getBoundingClientRect();
         const pct  = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1));
-        const v    = Math.round(pct * 150);
-        item.volume = v;
+        lastV = Math.round(pct * 150);
         this._lastTouched[touchKey] = Date.now();
 
+        // Drive visuals directly — bypass Alpine reactivity entirely.
+        const fillPct = `${pct * 100}%`;
+        if (fill)  fill.style.width = fillPct;
+        if (thumb) thumb.style.left = fillPct;
+        // Also update the vol-value number next to the slider.
+        const valEl = slider.closest('.vol-row')?.querySelector('.vol-value');
+        if (valEl) valEl.textContent = lastV + '%';
+
+        // Debounced backend call — only the invoke, not a proxy write.
         clearTimeout(this._volTimers[item.id]);
         this._volTimers[item.id] = setTimeout(() => {
           type === 'device'
-              ? this._invoke('set_volume', { id: item.id, volume: v })
-              : this._invoke('set_stream_volume', { id: item.id, volume: v, kind });
+              ? this._invoke('set_volume', { id: item.id, volume: lastV })
+              : this._invoke('set_stream_volume', { id: item.id, volume: lastV, kind });
         }, 40);
       };
 
       update(event);
       const onMove = (e) => update(e);
       const onUp   = () => {
-        this._dragCooldown = Date.now() + 200; // 40ms debounce + PW round-trip
+        // Write to the reactive proxy exactly once, after drag is done.
+        item.volume        = lastV;
+        this._dragCooldown = Date.now() + 200;
         this.isDragging    = false;
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup',   onUp);
@@ -316,7 +343,10 @@ document.addEventListener('alpine:init', () => {
 
     /* ── Device controls ───────────────────────────────────── */
     async setDefault(item) {
-      await this._invoke('set_default', { id: item.id });
+      // Optimistic update — flip UI immediately so the click feels instant.
+      const list = item.ports !== undefined ? this.sinks : this.sources;
+      list.forEach(d => { d.isDefault = (d.id === item.id); });
+      this._invoke('set_default', { id: item.id }); // fire-and-forget
       this._toast('default updated');
     },
 

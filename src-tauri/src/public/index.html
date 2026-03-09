@@ -320,51 +320,15 @@
     </template>
   </div>
 
-  <!-- ── CONFIG / CARD PROFILES ────────────────────────── -->
+  <!-- ── HARDWARE / CARD PROFILES ─────────────────────── -->
   <div class="tab-panel" x-show="activeTab === 'config'" role="tabpanel">
 
-    <!-- Theme picker -->
-    <div class="cfg-card">
-      <div class="cfg-card-head">
-        <div>
-          <div class="cfg-card-label">appearance</div>
-          <div class="cfg-card-title">Theme</div>
-        </div>
-      </div>
-      <div class="cfg-card-body">
+    <template x-if="cards.length === 0">
+      <div class="empty">no configurable hardware found</div>
+    </template>
 
-        <div class="theme-grid">
-          <template x-for="t in themeList" :key="t.id">
-            <div class="theme-card"
-                 :class="{ active: activeTheme === t.id }"
-                 @click="setTheme(t.id)"
-                 :title="t.label">
-              <div class="theme-swatch" :style="`background: ${t.swatch}`"></div>
-              <div class="theme-preview">
-                <div class="theme-dot" :style="`background: ${t.vars['bg']}`"></div>
-                <div class="theme-dot" :style="`background: ${t.vars['surface2']}`"></div>
-                <div class="theme-dot" :style="`background: ${t.vars['accent']}`"></div>
-                <div class="theme-dot" :style="`background: ${t.vars['green']}`"></div>
-                <div class="theme-dot" :style="`background: ${t.vars['red']}`"></div>
-              </div>
-              <div class="theme-label" x-text="t.label"></div>
-            </div>
-          </template>
-        </div>
-
-        <div class="user-theme-note">
-          Drop a <code>user_theme.css</code> at
-          <code>~/.config/archeaudio/user_theme.css</code>
-          to override any variable on top of the active theme.
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Hardware card profiles -->
     <template x-if="cards.length > 0">
       <div>
-        <div class="section-divider">hardware</div>
         <template x-for="c in cards" :key="c.id">
           <div class="cfg-card">
             <div class="cfg-card-head">
@@ -392,6 +356,65 @@
         </template>
       </div>
     </template>
+
+  </div>
+
+  <!-- ── APPEARANCE ───────────────────────────────────── -->
+  <div class="tab-panel" x-show="activeTab === 'appearance'" role="tabpanel">
+
+    <!-- Active theme hero card -->
+    <template x-if="themeList.find(t => t.id === activeTheme)">
+      <div class="theme-hero" x-data="{ get t() { return themeList.find(t => t.id === activeTheme) || themeList[0]; } }">
+        <div class="theme-hero-bar" :style="`background: linear-gradient(90deg, ${t.vars['bg']} 0%, ${t.vars['surface2']} 40%, ${t.swatch}22 100%)`"></div>
+        <div class="theme-hero-body">
+          <div class="theme-hero-left">
+            <div class="theme-hero-label">active theme</div>
+            <div class="theme-hero-name" x-text="t.label"></div>
+            <div class="theme-hero-meta" x-text="t.dark ? '◉ dark' : '◎ light'"></div>
+          </div>
+          <div class="theme-hero-palette">
+            <div class="theme-palette-strip">
+              <div class="theme-palette-swatch" :style="`background:${t.vars['bg']}`"         title="bg"></div>
+              <div class="theme-palette-swatch" :style="`background:${t.vars['surface']}`"    title="surface"></div>
+              <div class="theme-palette-swatch" :style="`background:${t.vars['surface2']}`"   title="surface2"></div>
+              <div class="theme-palette-swatch" :style="`background:${t.vars['surface3']}`"   title="surface3"></div>
+              <div class="theme-palette-swatch" :style="`background:${t.vars['accent']}`"     title="accent"></div>
+              <div class="theme-palette-swatch" :style="`background:${t.vars['text']}`"       title="text"></div>
+              <div class="theme-palette-swatch" :style="`background:${t.vars['green']}`"      title="green"></div>
+              <div class="theme-palette-swatch" :style="`background:${t.vars['yellow']}`"     title="yellow"></div>
+              <div class="theme-palette-swatch" :style="`background:${t.vars['red']}`"        title="red"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Theme picker grid -->
+    <div class="section-divider">themes</div>
+    <div class="theme-grid">
+      <template x-for="t in themeList" :key="t.id">
+        <div class="theme-card"
+             :class="{ active: activeTheme === t.id }"
+             @click="setTheme(t.id)">
+          <div class="theme-swatch" :style="`background: ${t.swatch}`"></div>
+          <div class="theme-preview">
+            <div class="theme-dot" :style="`background: ${t.vars['bg']}`"></div>
+            <div class="theme-dot" :style="`background: ${t.vars['surface2']}`"></div>
+            <div class="theme-dot" :style="`background: ${t.vars['accent']}`"></div>
+            <div class="theme-dot" :style="`background: ${t.vars['green']}`"></div>
+            <div class="theme-dot" :style="`background: ${t.vars['red']}`"></div>
+          </div>
+          <div class="theme-label" x-text="t.label"></div>
+        </div>
+      </template>
+    </div>
+
+    <!-- User override note -->
+    <div class="user-theme-note" style="margin-top:10px">
+      Drop a <code>user_theme.css</code> at
+      <code>~/.config/archeaudio/user_theme.css</code>
+      to override any CSS variable on top of the active theme.
+    </div>
 
   </div>
 
