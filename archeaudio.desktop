@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=ArcheAudio
+Comment=A modular PipeWire mixer for Arch Linux
+Exec=archeaudio
+Icon=archeaudio
+Terminal=false
+Categories=AudioVideo;Audio;Mixer;
+Keywords=audio;mixer;pipewire;volume;

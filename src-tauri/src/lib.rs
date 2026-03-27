@@ -3,10 +3,6 @@
 //  the system allocator for the many small allocs PipeWire
 //  data tends to produce.
 // ─────────────────────────────────────────────────────────────
-use mimalloc::MiMalloc;
-#[global_allocator]
-static GLOBAL: MiMalloc = MiMalloc;
-
 use tauri::Emitter;
 use std::{
     collections::HashMap,
