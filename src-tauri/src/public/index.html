@@ -136,7 +136,7 @@
           <div class="field-label">route</div>
           <select @change="route($event)" :aria-label="`Route ${s.appName} to output`">
             <template x-for="sk in targets" :key="sk.id">
-              <option :value="sk.id"
+              <option :value="sk.nodeName"
                       :selected="matchesSink(sk)"
                       x-text="sk.name">
               </option>

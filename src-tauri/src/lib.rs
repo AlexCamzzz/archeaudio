@@ -414,10 +414,10 @@ fn set_default(id: i64) -> bool {
 }
 
 #[tauri::command]
-fn move_stream(stream_id: i64, target_id: i64, kind: String) -> bool {
+fn move_stream(stream_id: i64, target_name: String, kind: String) -> bool {
     let subcmd = if kind == "source-output" { "move-source-output" } else { "move-sink-input" };
     Command::new("pactl")
-        .args([subcmd, &stream_id.to_string(), &target_id.to_string()])
+        .args([subcmd, &stream_id.to_string(), &target_name])
         .status().is_ok()
 }
 

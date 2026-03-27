@@ -30,13 +30,14 @@ document.addEventListener('alpine:init', () => {
     },
 
     route(event) {
-      api.moveStream(stream.id, parseInt(event.target.value), kind);
+      console.log('[route]', { streamId: stream.id, targetName: event.target.value, kind });
+      api.moveStream(stream.id, event.target.value, kind); // string, sin parseInt
     },
 
     matchesSink(target) {
       return this.isSink
-        ? target.nodeName === stream.sinkName
-        : target.id === stream.sourceIndex;
+          ? target.nodeName === stream.sinkName
+          : target.id === stream.sourceIndex;
     },
   }));
 });

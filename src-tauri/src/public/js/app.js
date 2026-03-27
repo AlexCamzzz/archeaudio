@@ -363,8 +363,8 @@ document.addEventListener('alpine:init', () => {
       await this._invoke('set_stream_mute', { id, mute, kind });
     },
 
-    async moveStream(streamId, targetId, kind) {
-      await this._invoke('move_stream', { streamId, targetId, kind });
+    async moveStream(streamId, targetName, kind) {
+      await this._invoke('move_stream', { streamId, targetName, kind });
       this._toast('stream routed');
     },
 
